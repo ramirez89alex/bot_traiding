@@ -22,6 +22,13 @@ def fetch_ohlcv(
     exchange = ccxt.binance({"enableRateLimit": True})
     all_rows: list[list] = []
 
+    if since_ms is None:
+        # Sin `since`, Binance solo devuelve las velas MÁS RECIENTES: paginar hacia
+        # adelante desde ahí no trae más historial. Para juntar `max_candles` velas
+        # hay que arrancar suficientemente atrás en el tiempo.
+        timeframe_ms = exchange.parse_timeframe(timeframe) * 1000
+        since_ms = exchange.milliseconds() - max_candles * timeframe_ms
+
     while len(all_rows) < max_candles:
         batch = exchange.fetch_ohlcv(symbol, timeframe=timeframe, since=since_ms, limit=limit)
         if not batch:
@@ -35,7 +42,8 @@ def fetch_ohlcv(
 
     df = pd.DataFrame(all_rows, columns=["timestamp", "open", "high", "low", "close", "volume"])
     df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
-    return df.drop_duplicates(subset="timestamp").reset_index(drop=True)
+    df = df.drop_duplicates(subset="timestamp").reset_index(drop=True)
+    return df.tail(max_candles).reset_index(drop=True)
 
 
 def cache_path(symbol: str, timeframe: str) -> Path:
