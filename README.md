@@ -142,7 +142,21 @@ precio, ordenada de mejor a peor candidato.
 2. En `.env`, completa `BINANCE_API_KEY` / `BINANCE_API_SECRET`, deja
    `SANDBOX=true`, y ajusta `CRYPTO_WATCHLIST` con los pares que quieras vigilar.
 
-### TradFi (Alpaca paper trading) — opcional
+### TradFi vía bStocks de Binance (sin cuenta nueva) — opcional
+
+Binance ofrece **bStocks**: acciones tokenizadas (`NVDAB`, `MSFTB`, `TSLAB`,
+`CRCLB`, `MUB`, `SNDKB`, ...) que cotizan como pares spot normales
+(`NVDAB/USDT`, etc.) dentro de la misma API que usa el resto del bot para
+cripto. No necesitas cuenta ni credenciales aparte: solo agrégalas a
+`CRYPTO_WATCHLIST` en `.env`, igual que cualquier par de Binance.
+
+⚠️ Antes de usarlas en `paper`, verifica que existan en **Binance Testnet**
+(`python main.py scan` o `backtest --symbol NVDAB/USDT` te lo confirman) — al
+ser un producto nuevo, es posible que el testnet aún no las liste, aunque sí
+respondan en el API pública de datos. Es un universo pequeño (~6 acciones);
+para más variedad usa la opción de Alpaca de abajo.
+
+### TradFi vía Alpaca (más de 7000 acciones/ETFs) — opcional
 
 1. Crea una cuenta gratuita en **https://alpaca.markets** y entra al panel de
    **Paper Trading** (`https://app.alpaca.markets/paper/dashboard/overview`).
@@ -181,9 +195,16 @@ python -m pytest -q
   ventajas claras sobre Binance para empezar.
 - **Alpaca** (TradFi): de los pocos brokers de acciones de EE.UU. con API
   gratuita, paper trading integrado y sin mínimos, pensado específicamente
-  para bots. Si ya tienes otro broker (Interactive Brokers, un broker de
-  forex, etc.), se puede añadir implementando `BrokerClient` en
-  `src/brokers/` siguiendo el mismo patrón que `alpaca_broker.py`.
+  para bots. Dato curioso: el propio "Binance Stocks" (acciones/ETFs reales
+  dentro de Binance) está construido sobre la infraestructura de Alpaca, así
+  que esta integración usa, en la práctica, el mismo motor por debajo. Si ya
+  tienes otro broker (Interactive Brokers, un broker de forex, etc.), se
+  puede añadir implementando `BrokerClient` en `src/brokers/` siguiendo el
+  mismo patrón que `alpaca_broker.py`.
+- **bStocks de Binance** (TradFi ligero, sin cuenta nueva): acciones
+  tokenizadas que cotizan como pares spot normales de Binance
+  (`NVDAB/USDT`, etc.) — ver la sección de paper trading arriba. Universo
+  pequeño (~6 acciones) pero cero fricción si ya tienes cuenta de Binance.
 
 ## Si en el futuro decides operar con dinero real
 
